@@ -1,0 +1,7 @@
+{ 
+    "name": "narwhal-wscript", 
+    "author": "Nathan L. Smith (http://nlsmith.com/) <nlloyds@gmail.com>", 
+    "keywords": ["jscript", "engine", "wscript", "microsoft", "windows"], 
+    "engine": "wscript"
+}
+
