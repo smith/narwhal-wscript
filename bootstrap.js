@@ -13,6 +13,7 @@
         fs = {}, // for filesystem methods
         print;
 
+
     // TODO: get the prefix from the environment and fall back on c:\narwhal
     //prefix = "C:\\narwhal";
     prefix = "Z:\\My Desktop\\narwhal";
@@ -46,18 +47,29 @@
         return this.o.fileExists(path);
     };
 
-    (new Function("system", fs.read(prefix + "\\narwhal.js")))({
-        global: this,
-        evalGlobal: evalGlobal,
-        engine: 'wscript',
-        engines: ['default'],
-        print : print,
-        evaluate: function (text) {
-            return new Function("require", "exports", "module", "system", 
-                "print", text);
-        },
-        fs: fs,
-        prefix : prefix,
-        prefixes: [prefix]
-    });
-}).call(this, function () { return eval(arguments[0]); });
+    try { // FIXME: This works, but throws an Object expected error
+        // Workaround is here for a bug in jscript's eval implementation
+        // http://www.bigresource.com/ASP-JScript-eval-bug-6nZST3Bk.html
+        (eval("var _n=" + fs.read(prefix + "\\narwhal.js") + ";_n"))({
+            global: this,
+            evalGlobal: evalGlobal,
+            engine: 'wscript',
+            engines: ['wscript', 'default'],
+            print : print,
+            evaluate: function (text) {
+                return eval(
+                    "(function(require, exports, module, system, print) {" +
+                    text + "/**/\n})"
+                );
+            },
+            fs: fs,
+            prefix : prefix,
+            prefixes: [prefix]
+        });
+    } catch (e) {
+        print("--- ERROR ---");
+        for (var i in e) {
+            print(i + ": " + e[i]);
+        }
+    }
+})(function () { return eval(arguments[0]); });
