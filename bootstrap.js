@@ -15,8 +15,7 @@
 
 
     // TODO: get the prefix from the environment and fall back on c:\narwhal
-    //prefix = "C:\\narwhal";
-    prefix = "Z:\\My Desktop\\narwhal";
+    prefix = "C:\\narwhal";
 
     // Create the print function if wscript echo is available
     if (typeof WScript === "object") {
@@ -55,12 +54,14 @@
         engine: 'wscript',
         engines: ['wscript', 'default'],
         print : print,
-        evaluate: function (text) {
-            eval("var _n=function(require, exports, module, system, print) {" +
-                text + "};_n()");
+        evaluate: function (text, fileName, lineNumber) {
+            return eval("var _n=function(" +
+                "require, exports, module, system, print) {" + text + "};_n");
         },
         fs: fs,
         prefix : prefix,
-        prefixes: [prefix]
+        prefixes: [prefix],
+        debug: true,
+        verbose : true
     });
 })(function () { return eval(arguments[0]); });
