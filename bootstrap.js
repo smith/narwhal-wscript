@@ -9,7 +9,7 @@
 
 (function (global, evalGlobal) {
     var shell = new ActiveXObject("WScript.Shell"),
-        env = shell.Environment("Process"),
+        env = shell.environment("Process"),
         prefix = env("NARWHAL_HOME") || "C:\\NARWHAL",
         fs = {}, // for filesystem methods
         print;
@@ -59,8 +59,8 @@
                         "require, exports, module, system, print) {" + 
                         text + "};_n");
                 },
-                debug: true, // env("NARWHAL_DEBUG"),
-                verbose: true // env("NARWHAL_VERBOSE"),
+                debug: env("NARWHAL_DEBUG"),
+                verbose: env("NARWHAL_VERBOSE")
             },
             file: fs
         });
