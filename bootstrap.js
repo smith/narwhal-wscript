@@ -7,15 +7,12 @@
 /*global ActiveXObject, WScript */
 /*jslint evil:true */
 
-(function (evalGlobal) {
-    var // TODO: Get environment
-        prefix, // TODO: check in env for this
+(function (global, evalGlobal) {
+    var shell = new ActiveXObject("WScript.Shell"),
+        env = shell.Environment("Process"),
+        prefix = env("NARWHAL_HOME") || "C:\\NARWHAL",
         fs = {}, // for filesystem methods
         print;
-
-
-    // TODO: get the prefix from the environment and fall back on c:\narwhal
-    prefix = "C:\\narwhal";
 
     // Create the print function if wscript echo is available
     if (typeof WScript === "object") {
@@ -33,35 +30,41 @@
         var contents = "", // File contents
             file; // File descriptor
 
-        if (this.isFile(path)) {
-            file = this.o.getFile(path);
+        if (fs.isFile(path)) {
+            file = fs.o.getFile(path);
             if (file.size > 0) {
-                contents = this.o.openTextFile(path).readAll();
+                contents = fs.o.openTextFile(path).readAll();
             }
         }
-        return contents;
-    };
+        return contents; };
 
     fs.isFile = function (path) {
-        return this.o.fileExists(path);
+        return fs.o.fileExists(path);
     };
 
-    // Workaround is here for a bug in jscript's eval implementation
-    // http://www.bigresource.com/ASP-JScript-eval-bug-6nZST3Bk.html
-    (eval("var _n=" + fs.read(prefix + "\\narwhal.js") + ";_n"))({
-        global: this,
-        evalGlobal: evalGlobal,
-        engine: 'wscript',
-        engines: ['wscript', 'default'],
-        print : print,
-        evaluate: function (text, fileName, lineNumber) {
-            return eval("var _n=function(" +
-                "require, exports, module, system, print) {" + text + "};_n");
-        },
-        fs: fs,
-        prefix : prefix,
-        prefixes: [prefix],
-        debug: true,
-        verbose : true
-    });
-})(function () { return eval(arguments[0]); });
+    try {
+        // Workaround is here for a bug in jscript's eval implementation
+        // http://www.bigresource.com/ASP-JScript-eval-bug-6nZST3Bk.html
+        (eval("var _n=" + fs.read(prefix + "\\narwhal.js") + ";_n"))({
+            system: {
+                global: global,
+                evalGlobal: evalGlobal,
+                engine: "wscript",
+                engines: ["wscript", "default"],
+                os: "windows", // FIXME: env("OS"),
+                print : print,
+                prefix : prefix,
+                evaluate: function (text, fileName, lineNumber) {
+                    return eval("var _n=function(" +
+                        "require, exports, module, system, print) {" + 
+                        text + "};_n");
+                },
+                debug: true, // env("NARWHAL_DEBUG"),
+                verbose: true // env("NARWHAL_VERBOSE"),
+            },
+            file: fs
+        });
+    } catch (e) {
+        throw e; // TODO: More descriptive errors
+    }
+})(this, function () { return eval(arguments[0]); });

@@ -12,8 +12,7 @@ if "%NARWHAL_HOME%" == "" (
 
 :: no repl yet
 if "%1" == "" (
-    echo "Please specify a script to run"
+    echo Please specify a script to run
 ) else (
-    echo "yeah!"
+    cscript /nologo "%BOOTSTRAP%" %0 %*
 )
-
